@@ -1,0 +1,29 @@
+import asyncio
+import edge_tts
+from pathlib import Path
+
+# Popular free neural voices
+DEFAULT_VOICES = {
+    "Male (US) - Christopher": "en-US-ChristopherNeural",
+    "Female (US) - Jenny": "en-US-JennyNeural",
+    "Female (UK) - Sonia": "en-GB-SoniaNeural",
+    "Male (UK) - Ryan": "en-GB-RyanNeural",
+    "Female (IN) - Neerja": "en-IN-NeerjaNeural",
+    "Male (IN) - Prabhat": "en-IN-PrabhatNeural",
+}
+
+class TTSEngine:
+    def __init__(self, voice: str = "en-US-ChristopherNeural"):
+        self.voice = voice
+
+    async def generate_speech_async(self, text: str, output_path: str) -> str:
+        output_file = Path(output_path)
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        communicate = edge_tts.Communicate(text, self.voice)
+        await communicate.save(str(output_file))
+        return str(output_file)
+
+    def generate_speech(self, text: str, output_path: str = "output/temp_audio.mp3") -> str:
+        """Synchronous wrapper for generating speech."""
+        return asyncio.run(self.generate_speech_async(text, output_path))
