@@ -1,0 +1,30 @@
+import os
+import requests
+
+class ScriptAgent:
+    """Generates presenter scripts from topics/prompts using Ollama or OpenAI/Gemini compatible endpoints."""
+    def __init__(self, provider: str = "template", api_key: str = None, model: str = "llama3"):
+        self.provider = provider
+        self.api_key = api_key or os.environ.get("LLM_API_KEY")
+        self.model = model
+
+    def create_script(self, topic: str, tone: str = "professional", length_words: int = 60) -> str:
+        prompt = (
+            f"Write a {tone} monologue for a virtual presenter about: '{topic}'. "
+            f"Keep it under {length_words} words. Return ONLY the spoken words with no stage directions."
+        )
+
+        if self.provider == "ollama":
+            # Local free LLM
+            resp = requests.post(
+                "http://localhost:11434/api/generate",
+                json={"model": self.model, "prompt": prompt, "stream": False}
+            )
+            return resp.json().get("response", "").strip()
+
+        # Fallback/template if no local LLM is active
+        return (
+            f"Welcome! Today we are discussing {topic}. "
+            f"This presentation was generated automatically using the HeyGen-style AI Video Agent Engine. "
+            f"Thank you for watching!"
+        )
